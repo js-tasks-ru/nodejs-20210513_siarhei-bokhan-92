@@ -13,19 +13,19 @@ class LineSplitStream extends stream.Transform {
 
 	_transform(chunk, encoding, callback) {
 		const chunkString = chunk.toString();
-    this.#buffer += chunkString;
+		this.#buffer += chunkString;
 
-    if (!lineBreakRegExp.test(chunkString)) return callback(); 
+		if (!lineBreakRegExp.test(chunkString)) return callback();
 
-    let lines = this.#buffer.split(os.EOL);
-    this.#buffer = endWithLineBreakRegExp.test(chunkString) ? "" : lines.pop();
-    lines.forEach(line => this.push(line));
+		let lines = this.#buffer.split(os.EOL);
+		this.#buffer = endWithLineBreakRegExp.test(chunkString) ? "" : lines.pop();
+		lines.forEach(line => this.push(line));
 
-    callback();
+		callback();
 	}
 
 	_flush(callback) {
-    if (this.#buffer !== "") this.push(this.#buffer);
+		if (this.#buffer !== "") this.push(this.#buffer);
 
 		callback();
 	}
