@@ -3,7 +3,7 @@ const LimitExceededError = require('./LimitExceededError');
 
 class LimitSizeStream extends stream.Transform {
 	#byteReadNumber = 0;
-  #limit = Infinity;
+	#limit = Infinity;
 
 	constructor(options) {
 		super(options);
