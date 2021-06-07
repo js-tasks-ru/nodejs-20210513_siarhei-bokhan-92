@@ -31,12 +31,12 @@ function handlePostRequest(url, req, res) {
 
 	if (fs.existsSync(filepath)) {
 		res.statusCode = 409;
-		return res.end();
+		return res.end("Conflict");
 	}
 
 	if (pathname.includes("/")) {
 		res.statusCode = 400;
-		return res.end();
+		return res.end("Bad Request");
 	}
 
 	const limitSizeStream = new LimitSizeStream({
@@ -50,10 +50,11 @@ function handlePostRequest(url, req, res) {
 
 		if (error instanceof LimitExceededError) {
 			res.statusCode = 413;
+			res.end("Request Entity Too Large");
 		} else {
 			res.statusCode = 500;
+			res.end("Internal Server Error");
 		}
-		res.end();
 
 		limitSizeStream.destroy();
 		writeFileStream.destroy();
@@ -68,11 +69,11 @@ function handlePostRequest(url, req, res) {
 		if (streamError) fs.unlinkSync(filepath);
 		if (!res.finished) {
 			res.statusCode = 201;
-			res.end();
+			res.end("Created");
 		}
 	})
 
-	req.on('abort', () => {
+	req.on('aborted', () => {
 		if (fs.existsSync(filepath)) fs.unlinkSync(filepath);
 	});
 }
