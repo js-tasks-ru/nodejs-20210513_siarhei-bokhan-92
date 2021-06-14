@@ -8,6 +8,8 @@ const mustBeAuthenticated = require('./libs/mustBeAuthenticated');
 const {login} = require('./controllers/login');
 const {oauth, oauthCallback} = require('./controllers/oauth');
 const {me} = require('./controllers/me');
+const mongoose = require("mongoose");
+const ObjectId = mongoose.Types.ObjectId;
 
 const app = new Koa();
 
@@ -33,6 +35,12 @@ app.use((ctx, next) => {
   ctx.login = async function(user) {
     const token = uuid();
 
+    await Session.create({
+      token,
+      lastVisit: new Date(),
+      user: new ObjectId(user.id),
+    });
+
     return token;
   };
 
@@ -45,6 +53,14 @@ router.use(async (ctx, next) => {
   const header = ctx.request.get('Authorization');
   if (!header) return next();
 
+  const [_, token] = header.split(" ");
+
+  const session = await Session.findOne({token}).populate("user");
+  if (!session) ctx.throw(401, "Неверный аутентификационный токен");
+
+  await session.updateOne({lastVisit: new Date()});
+  ctx.user = session.user;
+
   return next();
 });
 
@@ -53,7 +69,7 @@ router.post('/login', login);
 router.get('/oauth/:provider', oauth);
 router.post('/oauth_callback', handleMongooseValidationError, oauthCallback);
 
-router.get('/me', me);
+router.get('/me', mustBeAuthenticated, me);
 
 app.use(router.routes());
 
