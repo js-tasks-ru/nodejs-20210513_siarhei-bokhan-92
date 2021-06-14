@@ -17,4 +17,13 @@ const categorySchema = new mongoose.Schema({
   subcategories: [subCategorySchema],
 });
 
+// const transform = (doc, ret) => {
+//   const { _id: id, __v, ...rest } = ret;
+//   return { ...rest, id };
+// };
+
+// categorySchema.set('toJson', { transform });
+
+// subCategorySchema.set('toJson', { transform });
+
 module.exports = connection.model('Category', categorySchema);
